@@ -1,0 +1,294 @@
+body {
+    font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+    background-color: #f8f8f8;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 20px;
+    background-color: #ccc;
+    color: white;
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    left: 16px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+h1 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.profile-container {
+    position: absolute;
+    right:24px;
+}
+
+.user-profile {
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: #e6e6e6;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    width: 140px;
+}
+
+.profile-dropdown.hidden {
+  display: none;
+}
+
+.profile-dropdown button {
+    background: none;
+    border: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.profile-dropdown button:hover {
+    background-color: #d4d4d4;
+}
+
+.post-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+}
+
+.post-container h2 {
+    margin-bottom: 25px;
+    font-size: 22px;
+}
+
+.post-form {
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-form label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    margin-bottom: 6px;
+}
+
+#title,
+#content,
+input[type="file"] {
+    border: 1.8px solid #d1d1d1;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 24px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#title:focus,
+#content:focus {
+    border-color: #a593ff;
+}
+
+#content {
+    resize: none;
+    height: 200px;
+}
+
+.helper {
+    color: #d33;
+    font-size: 12px;
+    margin-top: -18px;
+}
+
+.helper-text {
+    font-size: 12px;
+    color: #777;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+
+.file-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.file-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.file-chip {
+    background-color: #f2f2f2;
+    border-radius: 20px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+input[type="file"] {
+    color: transparent; /* 글자 숨김 */
+}
+
+.file-label {
+    border: 1.8px solid #d1d1d1;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 24px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.file-button {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 600;
+    color: #333;
+    margin-right: 10px;
+}
+
+.file-name {
+    color: #000;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.remove-btn {
+    background: none;
+    border: none;
+    margin-left: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#submitBtn {
+    background-color: #ACA0EB;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 16px;
+    cursor: not-allowed;
+    transition: 0.2s;
+    margin-top: 5px;
+}
+
+#submitBtn:disabled {
+  background-color: #e0e0e0;
+  cursor: not-allowed;
+}
+
+#submitBtn:not(:disabled):hover {
+    background-color: #7F6AEE;
+    cursor: pointer;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    animation: fadeIn 0.25s ease;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    text-align: center;
+    width: 200px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+.modal-content p {
+    font-size: 15px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 24px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.cancel-btn,
+.confirm-btn {
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.cancel-btn {
+    background-color: #666;
+    color: #fff;
+}
+
+.cancel-btn:hover {
+    background-color: #000;
+}
+
+.confirm-btn {
+    background-color: #bba4f2;
+    color: #fff;
+}
+
+.confirm-btn:hover {
+    background-color: #7F6AEE;
+}

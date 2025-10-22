@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로그인</title>
+    <link rel="stylesheet" href="../css/login.css" />
+</head>
+<body>
+    <header class="header">
+        <h1>아무 말 대잔치</h1>
+    </header>
+
+    <main class="login-container">
+        <h2>로그인</h2>
+
+        <form id="loginForm" novalidate>
+            <label for="email">이메일</label>
+            <input type="text" id="email" placeholder="이메일을 입력하세요">
+            <p class="helper" id="emailHelper"></p>
+
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" placeholder="비밀번호를 입력하세요">
+            <p class="helper" id="passwordHelper"></p>
+
+            <button type="submit" id="loginBtn" disabled>로그인</button>
+        </form>
+
+        <p class="signup-link">
+            <a href="signup.html">회원가입</a>
+        </p>
+    </main>
+
+    <div id="loginModal" class="modal hidden">
+        <div class="modal-content">
+            <p>로그인이 되었습니다.</p>
+            <button id="confirmModal" class="confirm-btn">확인</button>
+        </div>
+    </div>
+
+    <script src="../js/login.js"></script>
+</body>
+</html>

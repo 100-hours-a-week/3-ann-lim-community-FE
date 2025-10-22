@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>게시글 상세 조회</title>
+    <link rel="stylesheet" href="../css/post.css" />
+</head>
+<body>
+    <header class="header">
+        <button class="back-btn"><</button>
+        <h1>아무 말 대잔치</h1>
+        <div class="profile-container">
+            <img class="user-profile" src="../assets/default-profile.png" alt="me" />
+            <div class="profile-dropdown hidden">
+                <button>회원정보 수정</button>
+                <button>비밀번호 수정</button>
+                <button>로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="post-container">
+        <section class="post-header">
+            <h2 class="post-title"></h2>
+            <div class="post-info">
+                <span class="profile-image"></span>
+                <span class="author"></span>
+                <span class="date"></span>
+            </div>
+            <div class="post-actions">
+                <button class="edit-btn">수정</button>
+                <button class="delete-btn">삭제</button>
+            </div>
+        </section>
+
+        <section class="post-content">
+            <div class="image-container"></div>
+            <p class="content"></p>
+        </section>
+
+        <section class="post-count">
+            <button class="like-btn"></button>
+            <span class="views-count"></span>
+            <span class="comments-count"></span>
+        </section>
+
+        <section class="comment-section">
+            <textarea id="commentInput" placeholder="댓글을 남겨주세요!"></textarea>
+            <button id="submitComment" disabled>댓글 등록</button>
+        </section>
+
+        <section id="commentList" class="comment-list"></section>
+    </main>
+
+    <div id="logoutModal" class="modal hidden">
+        <div class="modal-content">
+            <p>로그아웃 하시겠습니까?</p>
+            <div class="modal-buttons">
+                <button id="cancelLogout" class="cancel-btn">취소</button>
+                <button id="confirmLogout" class="confirm-btn">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="logoutCompleteModal" class="modal hidden">
+        <div class="modal-content">
+            <p>로그아웃 되었습니다.</p>
+            <div class="modal-buttons">
+                <button id="confirmLogoutComplete" class="confirm-btn">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="postDeleteModal" class="modal hidden">
+        <div class="modal-content">
+            <p>게시글을 삭제하시겠습니까?</p>
+            <p>삭제한 내용은 복구 할 수 없습니다.</p>
+            <div class="modal-buttons">
+                <button id="confirmDelete">확인</button>
+                <button id="cancelDelete">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="postDeleteCompleteModal" class="modal hidden">
+        <div class="modal-content">
+            <p>게시글이 삭제되었습니다.</p>
+            <div class="modal-buttons">
+                <button id="postDeleteComplete" class="confirm-btn">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="commentDeleteModal" class="modal hidden">
+        <div class="modal-content">
+            <p>댓글을 삭제하시겠습니까?</p>
+            <p>삭제한 내용은 복구 할 수 없습니다.</p>
+            <div class="modal-buttons">
+                <button id="confirmDelete">확인</button>
+                <button id="cancelDelete">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="commentDeleteCompleteModal" class="modal hidden">
+        <div class="modal-content">
+            <p>댓글이 삭제되었습니다.</p>
+            <div class="modal-buttons">
+                <button id="commentDeleteComplete" class="confirm-btn">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/post.js"></script>
+</body>
+</html>

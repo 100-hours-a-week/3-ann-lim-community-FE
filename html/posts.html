@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>게시글 목록</title>
+    <link rel="stylesheet" href="../css/posts.css" />
+</head>
+<body>
+    <header class="header">
+        <h1>아무 말 대잔치</h1>
+        <div class="profile-container">
+            <img class="user-profile" src="../assets/default-profile.png" alt="me" />
+            <div class="profile-dropdown hidden">
+                <button>회원정보 수정</button>
+                <button>비밀번호 수정</button>
+                <button>로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="intro-wrap">
+            <p class="intro">안녕하세요,<br/>아무 말 대잔치 <strong>게시판</strong> 입니다.</p>
+            <div class="btn-wrap">
+                <button id="writeBtn" class="write-btn">게시글 작성</button>
+            </div>
+        </div>
+
+        <section id="postList" class="post-list"></section>
+    </main>
+
+    <div id="logoutModal" class="modal hidden">
+        <div class="modal-content">
+            <p>로그아웃 하시겠습니까?</p>
+            <div class="modal-buttons">
+                <button id="cancelLogout" class="cancel-btn">취소</button>
+                <button id="confirmLogout" class="confirm-btn">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="logoutCompleteModal" class="modal hidden">
+        <div class="modal-content">
+            <p>로그아웃 되었습니다.</p>
+            <div class="modal-buttons">
+                <button id="confirmLogoutComplete" class="confirm-btn">확인</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="../js/posts.js"></script>
+</body>
+</html>

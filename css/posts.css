@@ -1,0 +1,268 @@
+body {
+    font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 20px;
+    background-color: #ccc;
+    color: white;
+}
+
+h1 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.profile-container {
+    position: absolute;
+    right:24px;
+}
+
+.user-profile {
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: #e6e6e6;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    width: 140px;
+}
+
+.profile-dropdown.hidden {
+    display: none;
+}
+
+.profile-dropdown button {
+    background: none;
+    border: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.profile-dropdown button:hover {
+    background-color: #d4d4d4;
+}
+
+.main {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.intro-wrap {
+    padding: 0px 0 18px 0;
+}
+
+.intro {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px; 
+}
+
+.intro strong {
+    font-weight: 700;
+}
+
+.btn-wrap {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.write-btn {
+    display: inline-block;
+    background-color: #ACA0EB;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.write-btn:hover {
+    background-color: #7F6AEE;
+}
+
+.post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.post-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.post-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #222;
+    margin: 0 0 10px 0;
+    white-space: nowrap;
+    max-width: 70%;
+}
+
+.post-date {
+    font-size: 12px;
+    color: #888;
+    white-space: nowrap;
+}
+
+.post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.post-meta-left {
+    display: flex;
+    gap: 10px;
+}
+
+.post-meta span {
+    margin-right: 10px;
+}
+
+.author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 15px;
+    position: relative;
+}
+
+
+.author::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -20px;
+    width: calc(100% + 40px);
+    height: 1px;
+    background-color: #e5e5e5;
+}
+
+.author .profile {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.author span {
+    font-size: 14px;
+    color: #333;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    text-align: center;
+    width: 200px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+.modal-content p {
+    font-size: 15px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 24px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.cancel-btn,
+.confirm-btn {
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.cancel-btn {
+    background-color: #666;
+    color: #fff;
+}
+
+.cancel-btn:hover {
+    background-color: #000;
+}
+
+.confirm-btn {
+    background-color: #bba4f2;
+    color: #fff;
+}
+
+.confirm-btn:hover {
+    background-color: #7F6AEE;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
