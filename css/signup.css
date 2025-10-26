@@ -151,6 +151,12 @@ form input:focus {
     font-size: 14px;
 }
 
+.footer {
+    position: fixed;
+    bottom: 10px;
+    left: 15px;
+}
+
 .login-link a:hover {
     text-decoration: underline;
 }

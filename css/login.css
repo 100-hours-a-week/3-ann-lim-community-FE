@@ -94,6 +94,12 @@ form input:focus {
     text-decoration: underline;
 }
 
+.footer {
+    position: fixed;
+    bottom: 10px;
+    left: 15px;
+}
+
 .modal {
     position: fixed;
     top: 0;
