@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>게시글 상세 조회</title>
     <link rel="stylesheet" href="../css/post.css" />
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 </head>
 <body>
     <header class="header">
@@ -23,19 +25,34 @@
     <main class="post-container">
         <section class="post-header">
             <h2 class="post-title"></h2>
-            <div class="post-info">
-                <span class="profile-image"></span>
-                <span class="author"></span>
-                <span class="date"></span>
+            <div class="post-info-row">
+                <div class="post-info">
+                    <img class="profile-image" />
+                    <span class="author"></span>
+                    <span class="date"></span>
+                </div>
+                <div class="post-actions">
+                    <button class="edit-btn">수정</button>
+                    <button class="delete-btn">삭제</button>
+                </div>
             </div>
-            <div class="post-actions">
-                <button class="edit-btn">수정</button>
-                <button class="delete-btn">삭제</button>
-            </div>
+
         </section>
 
         <section class="post-content">
-            <div class="image-container"></div>
+            <div class="image-container">
+                <div class="swiper">
+                     <div class="swiper-wrapper">
+                        <!-- JS로 이미지가 여기에 들어감 -->
+                    </div>
+                    <!-- 네비게이션 / 페이지네이션 -->
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+
+
             <p class="content"></p>
         </section>
 
@@ -45,8 +62,11 @@
             <span class="comments-count"></span>
         </section>
 
+        <div class="post-divider"></div>
+
         <section class="comment-section">
             <textarea id="commentInput" placeholder="댓글을 남겨주세요!"></textarea>
+            <hr class="comment-divider" />
             <button id="submitComment" disabled>댓글 등록</button>
         </section>
 
@@ -113,5 +133,7 @@
     </div>
 
     <script src="../js/post.js"></script>
+    <!-- Swiper JS -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 </body>
 </html>

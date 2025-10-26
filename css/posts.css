@@ -137,6 +137,7 @@ h1 {
     margin: 0 0 10px 0;
     white-space: nowrap;
     max-width: 70%;
+    white-space: pre-wrap;
 }
 
 .post-date {

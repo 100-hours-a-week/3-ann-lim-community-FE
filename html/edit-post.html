@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>게시글 추가</title>
-    <link rel="stylesheet" href="../css/write-post.css">
+    <title>게시글 수정</title>
+    <link rel="stylesheet" href="../css/edit-post.css">
 </head>
 <body>
     <header class="header">
@@ -21,14 +21,14 @@
     </header>
 
     <main class="post-container">
-        <h2>게시글 작성</h2>
+        <h2>게시글 수정</h2>
         
         <form id="postForm" class="post-form">
             <label for="title">제목*</label>
-            <input type="text" id="title" placeholder="제목을 입력해주세요. (최대 26글자)" maxlength="26">
+            <input type="text" id="title" maxlength="26">
 
             <label for="content">내용*</label>
-            <textarea id="content" placeholder="내용을 입력해주세요."></textarea>
+            <textarea id="content"></textarea>
             <p class="helper" id="postHelper"></p>
 
             <label for="image">이미지</label>
@@ -36,11 +36,12 @@
                 <label for="image" class="file-label">
                     <span class="file-button">파일 선택</span>
                     <span class="file-name" id="fileName">파일을 선택해주세요.</span>
+                    <div class="file-names" id="fileNames"></div>
                 </label>
                 <input type="file" id="image" accept="image/*" multiple hidden>
             </div>
 
-            <button type="button" id="submitBtn" disabled>완료</button>
+            <button type="button" id="submitBtn" disabled>수정하기</button>
         </form>
     </main>
 
@@ -70,6 +71,6 @@
         </div>
     </div>
 
-    <script src="../js/write-post.js"></script>
+    <script src="../js/edit-post.js"></script>
 </body>
 </html>

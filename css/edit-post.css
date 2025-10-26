@@ -132,10 +132,16 @@ input[type="file"] {
     margin-top: -18px;
 }
 
+.helper-text {
+    font-size: 12px;
+    color: #777;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+
 .file-wrapper {
     display: flex;
     flex-direction: column;
-    margin-bottom: 16px;
 }
 
 .file-list {
@@ -231,7 +237,7 @@ input[type="file"] {
 }
 
 .modal.hidden {
-    display: none;
+  display: none;
 }
 
 .modal-content {

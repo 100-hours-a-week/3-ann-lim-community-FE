@@ -12,18 +12,26 @@ const content = document.getElementById("content");
 const image = document.getElementById("image");
 const submitBtn = document.getElementById("submitBtn");
 const postForm = document.getElementById("postForm");
-
 const postHelper = document.getElementById("postHelper");
+const backBtn = document.querySelector(".back-btn");
 
 const modal = document.getElementById("writePostModal");
 const confirmModal = document.getElementById("confirmModal");
-const backBtn = document.querySelector(".back-btn");
 
-// 이미지 파일 선택 및 표시
 let selectedFiles = [];
+let originalImages = [];
+let postId = null;
+
+let initialTitle = "";
+let initialContent = "";
+let initialImages = [];
+
+// URL에서 postId 가져오기
+const params = new URLSearchParams(window.location.search);
+postId = params.get("id");
 
 backBtn.addEventListener("click", () => {
-    window.location.href = "posts.html";
+    window.location.href = `post.html?id=${postId}`;
 });
 
 async function loadUserProfile() {
@@ -110,7 +118,7 @@ function checkFormValidity() {
     const postMsg = validatePost(title.value, content.value);
     postHelper.textContent = postMsg;
 
-    const valid = !postMsg;
+    const valid = !postMsg || selectedFiles.length > 0 || originalImages.length !== initialImages.length;
     submitBtn.disabled = !valid;
     submitBtn.classList.toggle("active", valid);
 }
@@ -118,80 +126,110 @@ function checkFormValidity() {
 title.addEventListener("input", checkFormValidity);
 content.addEventListener("input", checkFormValidity);
 
-image.addEventListener("change", (e) => {
-    const newFiles = Array.from(e.target.files);
-    selectedFiles = [
-        ...selectedFiles,
-        ...newFiles.filter(
-            newFile => !selectedFiles.some(file => file.name === newFile.name && file.size === newFile.size)
-        )
-    ];
-    renderFileList();
+// 기존 게시글 불러오기
+async function loadPostData() {
+    try {
+        const response = await fetch(`http://localhost:8080/posts/${postId}/edit`);
+        if (!response.ok) {
+            throw new Error("게시글 정보를 불러오지 못했습니다.");
+        }
+        const data = await response.json();
+        console.log("🔥 서버 응답 데이터:", data);
 
-    const fileLabel = image.nextElementSibling;
-    if (fileLabel && fileLabel.tagName === "P") {
-        fileLabel.textContent = selectedFiles.length > 0
-            ? ""
-            : "파일을 선택해주세요.";
+        title.value = data.data.title;
+        content.value = data.data.content;
+        originalImages = data.data.images || [];
+
+        initialTitle = data.data.title;
+        initialContent = data.data.content;
+        initialImages = data.data.images || [];
+
+    renderImageList();
+    } catch (err) {
+        alert("게시글 수정 정보를 불러오지 못했습니다.");
     }
-});
+}
 
-// 파일 목록 렌더링
-function renderFileList() {
-    let fileListContainer = document.getElementById("fileList");
-
-    if (!fileListContainer) {
-        fileListContainer = document.createElement("div");
-        fileListContainer.id = "fileList";
-        fileListContainer.classList.add("file-list");
-        image.insertAdjacentElement("afterend", fileListContainer);
-    }
-
+// 기존 이미지 표시
+function renderImageList() {
+    const fileListContainer = document.getElementById("fileList") || createFileList();
     fileListContainer.innerHTML = "";
 
-    selectedFiles.forEach((file, index) => {
-        const chip = document.createElement("div");
-        chip.classList.add("file-chip");
-
-        const name = document.createElement("span");
-        name.textContent = file.name;
-
-        const removeBtn = document.createElement("button");
-        removeBtn.textContent = "x";
-        removeBtn.classList.add("remove-btn");
-        removeBtn.addEventListener("click", () => {
-            selectedFiles.splice(index, 1);
-            renderFileList();
+    originalImages.forEach((img, index) => {
+        const chip = createChip(`${img.image_name}.${img.extension}`, () => {
+            originalImages = originalImages.filter(
+                (image) => image.image_url !== img.image_url
+            );
+            renderImageList();
+            checkFormValidity();
         });
+        fileListContainer.appendChild(chip);
+    });
 
-        chip.appendChild(name);
-        chip.appendChild(removeBtn);
+    selectedFiles.forEach((file, index) => {
+        const chip = createChip(file.name, () => {
+            selectedFiles.splice(index, 1);
+            renderImageList();
+            checkFormValidity();
+        });
         fileListContainer.appendChild(chip);
     });
 }
 
-// 이미지 S3 URL 받기
+
+function createChip(label, onRemove) {
+    const chip = document.createElement("div");
+    chip.classList.add("file-chip");
+
+    const span = document.createElement("span");
+    span.textContent = label;
+
+    const btn = document.createElement("button");
+    btn.textContent = "x";
+    btn.classList.add("remove-btn");
+    btn.addEventListener("click", onRemove);
+
+    chip.appendChild(span);
+    chip.appendChild(btn);
+
+    return chip;
+}
+
+function createFileList() {
+    const div = document.createElement("div");
+    div.id = "fileList";
+    div.classList.add("file-list");
+    image.insertAdjacentElement("afterend", div);
+
+    return div;
+}
+
+// 이미지 선택 시 추가
+image.addEventListener("change", (e) => {
+    const newFiles = Array.from(e.target.files);
+    selectedFiles.push(...newFiles);
+    renderImageList();
+});
+
+// S3 업로드
 async function uploadImagesToS3(files) {
     if (!files.length) {
         return [];
     }
-
     const formData = new FormData();
-    files.forEach(file => formData.append("files", file));
+    files.forEach((file) => formData.append("files", file));
 
     try {
         const response = await fetch("http://localhost:8080/images", {
             method: "POST",
             body: formData,
         });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message);
+        }
 
-    const result = await response.json();
-
-    if (!response.ok) {
-        throw new Error(result.message);
-    }
-
-    return result.data.images.map((url, idx) => {
+        return result.data.images.map((url, idx) => {
             const file = files[idx];
             const fullName = file.name;
             const dotIndex = fullName.lastIndexOf(".");
@@ -204,61 +242,89 @@ async function uploadImagesToS3(files) {
                 extension: extension,
             };
         });
-
-    } catch (error) {
-        alert("이미지 업로드 중 오류가 발생했습니다.");
-        return;
+    } catch (err) {
+        alert("이미지 업로드 중 오류 발생");
+        return [];
     }
 }
 
-// 게시글 추가
-async function addPost() {
+// 게시글 수정
+async function updatePost() {
     const postTitle = title.value;
     const postContent = content.value;
+    
+    const msg = validatePost(postTitle, postContent);
+    if (msg) {
+        alert(msg);
+        return;
+    }
 
-    if (!postTitle || !postContent) {
-        alert("제목, 내용을 모두 작성해주세요.");
+    const isTitleChanged = postTitle !== initialTitle;
+    const isContentChanged = postContent !== initialContent;
+    const isImageChanged =
+        selectedFiles.length > 0 ||
+        originalImages.length !== initialImages.length ||
+        !originalImages.every((img, idx) =>
+            img.image_url === initialImages[idx]?.image_url
+        );
+
+    if (!isTitleChanged && !isContentChanged && !isImageChanged) {
+        modal.classList.remove("hidden");
+        confirmModal.onclick = () => {
+            modal.classList.add("hidden");
+            window.location.href = `post.html?id=${postId}`;
+        };
         return;
     }
 
     try {
-        let imageInfos = [];
-
+        let uploaded = [];
         if (selectedFiles.length > 0) {
-            imageInfos = await uploadImagesToS3(selectedFiles);
+            uploaded = await uploadImagesToS3(selectedFiles);
         }
 
-        const response = await fetch("http://localhost:8080/posts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                title: postTitle,
-                content: postContent,
-                post_images: imageInfos,
-            }),
+        const requestBody = {};
+        if (isTitleChanged) {
+            requestBody.title = postTitle;
+        }
+        if (isContentChanged) {
+            requestBody.content = postContent;
+        }
+        if (isImageChanged) {
+            const mergedImages = [...originalImages, ...uploaded];
+            requestBody.post_images = mergedImages.map(img => ({
+                image_url: img.image_url,
+                image_name: img.image_name,
+                extension: img.extension
+            }));
+        }
+
+        if (!requestBody.post_images) {
+            requestBody.post_images = [];
+        }
+        
+        const response = await fetch(`http://localhost:8080/posts/${postId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody),
         });
 
         const result = await response.json();
-
         if (response.ok) {
             modal.classList.remove("hidden");
-
             confirmModal.onclick = () => {
                 modal.classList.add("hidden");
-                window.location.href = "posts.html";
+                window.location.href = `post.html?id=${postId}`;
             };
-        }
-        else 
-        {
+        } else {
             throw new Error(result.message);
         }
     } catch (err) {
-        alert("게시글 등록 중 오류가 발생했습니다.");
+        alert("게시글 수정 중 오류가 발생했습니다.");
     }
 }
 
-loadUserProfile();
+submitBtn.addEventListener("click", updatePost);
 
-submitBtn.addEventListener("click", addPost);
+loadUserProfile();
+loadPostData();

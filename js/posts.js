@@ -50,10 +50,10 @@ profileDropdownButtons.forEach((btn, index) => {
     btn.addEventListener("click", async () => {
         switch (index) {
             case 0: // 회원정보수정
-                window.location.href = "../html/edit-profile.html";
+                window.location.href = "edit-profile.html";
                 break;
             case 1: // 비밀번호수정
-                window.location.href = "../html/change-password.html";
+                window.location.href = "change-password.html";
                 break;
             case 2: // 로그아웃
                 logoutModal.classList.remove("hidden");
@@ -76,7 +76,7 @@ profileDropdownButtons.forEach((btn, index) => {
 
                         confirmLogoutComplete.onclick = () => {
                             logoutCompleteModal.classList.add("hidden");
-                            window.location.href = "../html/login.html";
+                            window.location.href = "login.html";
                         };
                     } catch (err) {
                         alert("로그아웃 중 오류가 발생했습니다.");
@@ -88,7 +88,7 @@ profileDropdownButtons.forEach((btn, index) => {
 });
 
 writeBtn.addEventListener("click", () => {
-    window.location.href = "../html/write.html"; 
+    window.location.href = "write-post.html"; 
 });
 
 // 마지막 카드가 보이면 다음 데이터 호출

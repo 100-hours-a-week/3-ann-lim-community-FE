@@ -73,10 +73,6 @@ function validateNickname(input) {
         return "띄어쓰기를 없애주세요.";
     }
 
-    if (input.length > 10) {
-        return "닉네임은 최대 10자까지 작성 가능합니다.";
-    }
-
     return "";
 }
 
