@@ -106,7 +106,7 @@ profileDropdownButtons.forEach((btn, index) => {
     });
 });
 
-// ====== 토스트 표시 함수 ======
+// 토스트 표시
 function showToast() {
     toast.textContent = "수정 완료";
     toast.classList.add("show");
