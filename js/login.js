@@ -85,7 +85,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
         confirmModal.onclick = () => {
             modal.classList.add("hidden");
-            window.location.href = "posts.html";
+            window.location.href = "/posts";
         };
     } catch (error) {
         alert("로그인 중 오류가 발생했습니다.");

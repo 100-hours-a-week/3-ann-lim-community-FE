@@ -20,7 +20,7 @@ const submitBtn = document.getElementById("submitBtn");
 const toast = document.getElementById("toast");
 
 backBtn.addEventListener("click", () => {
-    window.location.href = "posts.html";
+    window.location.href = "/posts";
 });
 
 // Todo
@@ -61,7 +61,7 @@ profileDropdownButtons.forEach((btn, index) => {
     btn.addEventListener("click", async () => {
         switch (index) {
             case 0: // 회원정보수정
-                window.location.href = "edit-profile.html";
+                window.location.href = "/profile";
                 break;
             case 1: // 비밀번호수정
                 window.location.reload();
@@ -87,7 +87,7 @@ profileDropdownButtons.forEach((btn, index) => {
 
                         confirmLogoutComplete.onclick = () => {
                             logoutCompleteModal.classList.add("hidden");
-                            window.location.href = "../html/login.html";
+                            window.location.href = "/login";
                         };
                     } catch (err) {
                         alert("로그아웃 중 오류가 발생했습니다.");

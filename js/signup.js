@@ -14,7 +14,7 @@ const confirmModal = document.getElementById("confirmModal");
 
 const backBtn = document.querySelector(".back-btn")
     backBtn.addEventListener("click", () => {
-        window.location.href = "login.html";
+        window.location.href = "/login";
 });
 
 // 이메일 검증
@@ -209,7 +209,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
 
             confirmModal.onclick = () => {
                 modal.classList.add("hidden");
-                window.location.href = "login.html";
+                window.location.href = "/login";
             };
         }
         else {

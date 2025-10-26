@@ -28,7 +28,7 @@ let initialProfileImage = "";
 let initialNickname = "";
 
 backBtn.addEventListener("click", () => {
-    window.location.href = "posts.html";
+    window.location.href = "/posts";
 });
 
 // Todo
@@ -72,7 +72,7 @@ profileDropdownButtons.forEach((btn, index) => {
                 window.location.reload();
                 break;
             case 1: // 비밀번호수정
-                window.location.href = "../html/change-password.html";
+                window.location.href = "/password";
                 break;
             case 2: // 로그아웃
                 logoutModal.classList.remove("hidden");
@@ -95,7 +95,7 @@ profileDropdownButtons.forEach((btn, index) => {
 
                         confirmLogoutComplete.onclick = () => {
                             logoutCompleteModal.classList.add("hidden");
-                            window.location.href = "../html/login.html";
+                            window.location.href = "/login";
                         };
                     } catch (err) {
                         alert("로그아웃 중 오류가 발생했습니다.");

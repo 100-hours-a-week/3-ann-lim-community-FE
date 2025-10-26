@@ -49,11 +49,10 @@ let lastCommentId = null;
 let isLoading = false;
 
 // URL에서 postId 가져오기
-const params = new URLSearchParams(window.location.search);
-postId = params.get("id");
+postId = window.location.pathname.split("/").pop();
 
 backBtn.addEventListener("click", () => {
-    window.location.href = "posts.html";
+    window.location.href = "/posts";
 });
 
 async function loadUserProfile() {
@@ -93,10 +92,10 @@ profileDropdownButtons.forEach((btn, index) => {
     btn.addEventListener("click", async () => {
         switch (index) {
             case 0: // 회원정보수정
-                window.location.href = "../html/edit-profile.html";
+                window.location.href = "/profile";
                 break;
             case 1: // 비밀번호수정
-                window.location.href = "../html/change-password.html";
+                window.location.href = "/password";
                 break;
             case 2: // 로그아웃
                 logoutModal.classList.remove("hidden");
@@ -119,7 +118,7 @@ profileDropdownButtons.forEach((btn, index) => {
 
                         confirmLogoutComplete.onclick = () => {
                             logoutCompleteModal.classList.add("hidden");
-                            window.location.href = "../html/login.html";
+                            window.location.href = "/login";
                         };
                     } catch (err) {
                         alert("로그아웃 중 오류가 발생했습니다.");
@@ -322,8 +321,6 @@ async function initPostPage() {
 
     if (!postId) {
       alert("잘못된 접근입니다.");
-      // window.location.href = "posts.html";
-
       return;
     }
 
@@ -343,7 +340,7 @@ editBtn.addEventListener("click", () => {
         return;
     }
 
-    window.location.href = `edit-post.html?id=${postId}`;
+    window.location.href = `/edit/${postId}`;
 });
 
 // 게시글 삭제
@@ -375,7 +372,7 @@ confirmPostDelete.addEventListener("click", async () => {
 
 postDeleteCompleteBtn.addEventListener("click", () => {
     postDeleteCompleteModal.classList.add("hidden");
-    window.location.href = "posts.html";
+    window.location.href = "/posts";
 });
 
 // 댓글 입력 버튼
