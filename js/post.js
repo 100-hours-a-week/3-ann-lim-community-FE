@@ -9,6 +9,9 @@ const profileDropdownButtons = profileDropdown.querySelectorAll("button");
 
 const backBtn = document.querySelector(".back-btn");
 
+const wrapper = document.querySelector(".swiper-wrapper");
+const imageContainer = document.querySelector(".image-container");
+
 const postTitle = document.querySelector(".post-title");
 const profileImage = document.querySelector(".profile-image");
 const author = document.querySelector(".author");
@@ -17,7 +20,6 @@ const content = document.querySelector(".content");
 const likeBtn = document.querySelector(".like-btn");
 const viewsCount = document.querySelector(".views-count");
 const commentsCount = document.querySelector(".comments-count");
-const imageContainer = document.querySelector(".image-container");
 
 const editBtn = document.querySelector(".edit-btn");
 const deleteBtn = document.querySelector(".delete-btn");
@@ -39,6 +41,10 @@ const commentDeleteCompleteBtn = commentDeleteCompleteModal.querySelector("#comm
 
 const commentList = document.getElementById("commentList");
 
+const accessToken = localStorage.getItem("accessToken");
+
+const errorToast = document.getElementById("errorToast");
+
 let postId = null;
 let isLiked = false;
 let likeId = null;
@@ -51,29 +57,45 @@ let isLoading = false;
 // URL에서 postId 가져오기
 postId = window.location.pathname.split("/").pop();
 
+function showToast(message) {
+    errorToast.textContent = message;
+    errorToast.classList.remove("hidden");
+    errorToast.classList.add("show");
+
+    setTimeout(() => {
+        errorToast.classList.remove("show");
+        setTimeout(() => errorToast.classList.add("hidden"), 300);
+    }, 2500);
+}
+
 backBtn.addEventListener("click", () => {
     window.location.href = "/posts";
 });
 
 async function loadUserProfile() {
     try {
-        const response = await fetch("http://localhost:8080/users/me");
+        const response = await fetch("http://localhost:8080/users/me", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
+        });
 
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("유저 정보를 불러오지 못했습니다.");
+            handleApiError(result);
         }
 
-        const data = await response.json();
-
-        if (data.data.profile_image) {
-            userProfileImg.src = data.data.profile_image;
+        if (result.data.profile_image) {
+            userProfileImg.src = result.data.profile_image;
         }
         else {
             userProfileImg.src = "../assets/default-profile.png";
         }
 
     } catch (err) {
-        console.error(err);
+        showToast("프로필 사진 업로드 중 오류가 발생했습니다.");
     }
 }
 
@@ -106,11 +128,16 @@ profileDropdownButtons.forEach((btn, index) => {
                 confirmLogout.onclick = async() => {
                     try {
                         const response = await fetch("http://localhost:8080/auth", {
-                            method: "DELETE"
+                            method: "DELETE",
+                            headers: {
+                                "Authorization": `Bearer ${accessToken}`
+                            },
+                            credentials: "include",
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
-                            throw new Error("로그아웃 요청 실패");
+                            handleApiError(result);
                         }
 
                         logoutModal.classList.add("hidden");
@@ -121,7 +148,7 @@ profileDropdownButtons.forEach((btn, index) => {
                             window.location.href = "/login";
                         };
                     } catch (err) {
-                        alert("로그아웃 중 오류가 발생했습니다.");
+                        showToast("로그아웃 중 오류가 발생했습니다.");
                     }
                 };
                 break;
@@ -131,11 +158,18 @@ profileDropdownButtons.forEach((btn, index) => {
 
 // 게시글 데이터 요청
 async function fetchPostData(postId) {
-    const response = await fetch(`http://localhost:8080/posts/${postId}`);
+    const response = await fetch(`http://localhost:8080/posts/${postId}`, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${accessToken}`
+        },
+        credentials: "include",
+    });
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.message)
+        handleApiError(result);
+        window.location.href = "/posts";
     };
 
     return result.data;
@@ -171,8 +205,6 @@ function renderPost(post) {
 
 // 이미지 렌더링
 function renderImages(images = []) {
-    const wrapper = document.querySelector(".swiper-wrapper");
-    const imageContainer = document.querySelector(".image-container");
     if (!wrapper || !imageContainer) {
         return;
     }
@@ -204,10 +236,10 @@ function renderImages(images = []) {
 
     // Swiper 초기화
     new Swiper(".swiper", {
-        slidesPerView: "auto", // 자동으로 여러 장 보이게
-        spaceBetween: 10,      // 이미지 사이 간격
-        freeMode: true,        // 자연스러운 드래그
-        grabCursor: true,      // 커서 손모양
+        slidesPerView: "auto",
+        spaceBetween: 10,
+        freeMode: true,
+        grabCursor: true,
         pagination: {
             el: ".swiper-pagination",
             clickable: true,
@@ -228,7 +260,6 @@ const observer = new IntersectionObserver(
 
 // 댓글 불러오기 함수
 async function fetchComments() {
-
     if (isLoading) {
         return;
     }
@@ -242,13 +273,19 @@ async function fetchComments() {
             url += `?lastCommentCreatedAt=${formattedDate}&lastCommentId=${lastCommentId}`;
         }
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
+        });
+
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("댓글을 불러오지 못했습니다.");
+            handleApiError(result);
         }
-        
-        const data = await response.json();
-        const comments = data.data.comments;
+        const comments = result.data.comments;
 
         if (!comments || comments.length === 0) {
             return;
@@ -256,14 +293,14 @@ async function fetchComments() {
 
         renderComments(comments);
 
-        lastCommentCreatedAt = data.data.last_comment_created_at;
-        lastCommentId = data.data.last_comment_id;
+        lastCommentCreatedAt = result.data.last_comment_created_at;
+        lastCommentId = result.data.last_comment_id;
 
         if (commentList.lastElementChild) {
             observer.observe(commentList.lastElementChild);
         } 
     } catch (err) {
-        alert("댓글 목록 조회 중 오류가 발생했습니다.")
+        showToast("댓글 목록 조회 중 오류가 발생했습니다.");
     } finally {
         isLoading = false;
     }
@@ -320,15 +357,16 @@ function formatNumber(num) {
 async function initPostPage() {
 
     if (!postId) {
-      alert("잘못된 접근입니다.");
-      return;
+        showToast("잘못된 접근입니다.");
+        return;
     }
 
     try {
         const post = await fetchPostData(postId);
         renderPost(post);
     } catch (err) {
-        alert("게시글을 불러오는 중 오류가 발생했습니다.");
+        showToast("게시글을 불러오는 중 오류가 발생했습니다.");
+        window.location.href = "/posts";
   }
 }
 
@@ -336,7 +374,7 @@ async function initPostPage() {
 editBtn.addEventListener("click", () => {
 
     if (!postId) {
-        alert("잘못된 접근입니다.");
+        showToast("잘못된 접근입니다.");
         return;
     }
 
@@ -357,16 +395,21 @@ confirmPostDelete.addEventListener("click", async () => {
     try {
         const response = await fetch(`http://localhost:8080/posts/${postId}`, {
         method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${accessToken}`
+        },
+        credentials: "include",
     });
 
+    const result = await response.json();
     if (!response.ok) {
-        throw new Error("게시글 삭제 실패");
+        handleApiError(result);
     }
 
     postDeleteModal.classList.add("hidden");
     postDeleteCompleteModal.classList.remove("hidden");
     } catch (err) {
-        alert("게시글 삭제 중 오류가 발생했습니다.");
+        showToast("게시글 삭제 중 오류가 발생했습니다.");
   }
 });
 
@@ -393,13 +436,16 @@ submitComment.addEventListener("click", async () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify({ content }),
+            credentials: "include",
         });
 
-    if (!response.ok) {
-      throw new Error("댓글 등록 실패");
-    }
+        const result = await response.json();
+        if (!response.ok) {
+            handleApiError(result);
+        }
 
     // 댓글 등록 성공 후
     commentInput.value = "";
@@ -413,7 +459,7 @@ submitComment.addEventListener("click", async () => {
     await initPostPage();
 
     } catch (err) {
-        alert("댓글 등록 중 오류가 발생했습니다.");
+        showToast("댓글 등록 중 오류가 발생했습니다.");
     }
 });
 
@@ -440,9 +486,14 @@ likeBtn.addEventListener("click", async () => {
         const method = isLiked ? "DELETE" : "POST";
 
         const response = await fetch(`http://localhost:8080/posts/${postId}/likes`, {
-            method,
+            method: method,
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
         });
 
+        const result = await response.json();
         if (response.ok) {
             const likeCountElement = likeBtn.querySelector("strong");
             const currentCount = parseInt(likeCountElement.textContent);
@@ -451,10 +502,10 @@ likeBtn.addEventListener("click", async () => {
             updateLikeButtonUI(isLiked, newCount);
         }
         else {
-            throw new Error("좋아요 요청 실패");
+            showToast(result);
         }
     } catch (err) {
-        alert("좋아요 처리 중 오류가 발생했습니다.");
+        showToast("좋아요 처리 중 오류가 발생했습니다.");
     }
 });
 
@@ -476,21 +527,25 @@ cancelCommentDelete.addEventListener("click", () => {
 
 // 댓글 삭제 확인
 confirmCommentDelete.addEventListener("click", async () => {
-
     try {
         const response = await fetch(`http://localhost:8080/posts/${postId}/comments/${commentId}`, {
             method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
         });
 
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("댓글 삭제 실패");
+            handleApiError(result);
         }
 
         commentDeleteModal.classList.add("hidden");
         commentDeleteCompleteModal.classList.remove("hidden");
 
     } catch (err) {
-        alert("댓글 삭제 중 오류가 발생했습니다.");
+        showToast("댓글 삭제 중 오류가 발생했습니다.");
     }
 });
 
@@ -498,12 +553,10 @@ confirmCommentDelete.addEventListener("click", async () => {
 commentDeleteCompleteBtn.addEventListener("click", async () => {
     commentDeleteCompleteModal.classList.add("hidden");
 
-    // 댓글 등록 성공 후
     commentInput.value = "";
     submitComment.disabled = true;  
 
-    // 댓글 목록 다시 불러오기 (서버 최신 상태 반영)
-    commentList.innerHTML = ""; // 기존 댓글 다 지우고
+    commentList.innerHTML = "";
     lastCommentCreatedAt = null;
     lastCommentId = null;
     await fetchComments();
@@ -513,7 +566,7 @@ commentDeleteCompleteBtn.addEventListener("click", async () => {
 // 댓글 수정 버튼 클릭
 commentList.addEventListener("click", (e) => {
 
-    const btn = e.target.closest("button"); // ✅ 클릭된 요소가 자식이어도 버튼으로 인식
+    const btn = e.target.closest("button");
     if (!btn) {
         return;
     }
@@ -579,7 +632,7 @@ commentList.addEventListener("click", (e) => {
         const newContent = textarea.value;
 
         if (!newContent) {
-            alert("댓글 내용을 입력해주세요!");
+            showToast("댓글 내용을 입력해주세요.");
             return;
         }
 
@@ -592,37 +645,39 @@ async function updateComment(commentId, newContent, commentCard) {
 
     try {
         const response = await fetch(`http://localhost:8080/posts/${postId}/comments/${commentId}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content: newContent }),
-    });
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({ content: newContent }),
+            credentials: "include",
+        });
 
-    if (!response.ok) {
-      throw new Error("댓글 수정 실패");
-    }
+        const result = await response.json();
+        if (!response.ok) {
+            handleApiError(result);
+        }
 
-    // 성공 시 화면 갱신
-    const commentActions = commentCard.querySelector(".comment-actions");
-    const textarea = commentCard.querySelector(".comment-edit-input");
+        // 성공 시 화면 갱신
+        const commentActions = commentCard.querySelector(".comment-actions");
+        const textarea = commentCard.querySelector(".comment-edit-input");
 
-    const newP = document.createElement("p");
-    newP.classList.add("comment-text");
-    newP.textContent = newContent;
+        const newP = document.createElement("p");
+        newP.classList.add("comment-text");
+        newP.textContent = newContent;
 
-    textarea.replaceWith(newP);
-    commentActions.innerHTML = `
-        <button class="edit-comment-btn" data-id="${commentId}">수정</button>
-        <button class="delete-comment-btn" data-id="${commentId}">삭제</button>
-    `;
-    commentCard.classList.remove("editing");
+        textarea.replaceWith(newP);
+        commentActions.innerHTML = `
+            <button class="edit-comment-btn" data-id="${commentId}">수정</button>
+            <button class="delete-comment-btn" data-id="${commentId}">삭제</button>
+        `;
+        commentCard.classList.remove("editing");
 
     } catch (err) {
-        alert("댓글 수정 중 오류가 발생했습니다.");
+        showToast("댓글 수정 중 오류가 발생했습니다.");
     }
 }
-
 
 // 실행
 document.addEventListener("DOMContentLoaded", async () => {
@@ -631,6 +686,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         await initPostPage();
         await fetchComments();
     } catch (err) {
-        alert("페이지를 불러오는 중 오류가 발생했습니다.");
+        showToast("페이지를 불러오는 중 오류가 발생했습니다.");
+        window.location.href = "/posts";
     }
 });
+
+function handleApiError(result) {
+    if (result.status === 400) {
+        showToast(result.message);
+    }
+    else if (result.status === 401) {
+        showToast(result.message);
+    }
+    else if (result.status === 403) {
+        showToast(result.message);
+    }
+    else if (result.status === 404) {
+        showToast(result.message);
+    }
+    else if (result.status === 409) {
+        showToast(result.message);
+    }
+    else if (result.status === 422) {
+        result.errors.forEach(err => {
+            if (err.field === "content") {
+                showToast(err.message);
+            }
+        });
+    }
+    else if (result.status === 500) {
+        showToast(result.message);
+    }
+    else {
+        showToast("알 수 없는 오류가 발생했습니다.");
+    }
+}

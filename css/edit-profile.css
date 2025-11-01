@@ -342,6 +342,31 @@ form input:focus {
     background-color: #7F6AEE;
 }
 
+#errorToast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(220, 53, 69, 1);;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, bottom 0.3s ease;
+    z-index: 9999;
+}
+
+#errorToast.show {
+    opacity: 1;
+    bottom: 30px;
+}
+
+#errorToast.hidden {
+  display: none;
+}
+
 /* 애니메이션 유지 */
 @keyframes fadeIn {
     from { opacity: 0; }

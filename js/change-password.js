@@ -19,30 +19,39 @@ const submitBtn = document.getElementById("submitBtn");
 
 const toast = document.getElementById("toast");
 
+const accessToken = localStorage.getItem("accessToken");
+const userId = localStorage.getItem("userId");
+
+const errorToast = document.getElementById("errorToast");
+
 backBtn.addEventListener("click", () => {
     window.location.href = "/posts";
 });
 
-// Todo
 async function loadUserProfile() {
     try {
-        const response = await fetch("http://localhost:8080/users/me");
+        const response = await fetch("http://localhost:8080/users/me", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
+        });
 
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("유저 정보를 불러오지 못했습니다.");
+            handleApiError(result);
         }
 
-        const data = await response.json();
-
-        if (data.data.profile_image) {
-            userProfileImg.src = data.data.profile_image;
+        if (result.data.profile_image) {
+            userProfileImg.src = result.data.profile_image;
         }
         else {
             userProfileImg.src = "../assets/default-profile.png";
         }
 
     } catch (err) {
-        console.error(err);
+        showToast("프로필 사진 업로드 중 오류가 발생했습니다.");
     }
 }
 
@@ -75,11 +84,16 @@ profileDropdownButtons.forEach((btn, index) => {
                 confirmLogout.onclick = async() => {
                     try {
                         const response = await fetch("http://localhost:8080/auth", {
-                            method: "DELETE"
+                            method: "DELETE",
+                            headers: {
+                                "Authorization": `Bearer ${accessToken}`
+                            },
+                            credentials: "include",
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
-                            throw new Error("로그아웃 요청 실패");
+                            handleApiError(result);
                         }
 
                         logoutModal.classList.add("hidden");
@@ -90,7 +104,7 @@ profileDropdownButtons.forEach((btn, index) => {
                             window.location.href = "/login";
                         };
                     } catch (err) {
-                        alert("로그아웃 중 오류가 발생했습니다.");
+                        showErrorToast("로그아웃 중 오류가 발생했습니다.");
                     }
                 };
                 break;
@@ -161,32 +175,68 @@ passwordConfirm.addEventListener("input", () => {
 });
 
 // 수정하기 클릭
-// Todo
 document.getElementById("changePasswordForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     try {
-        const response = await fetch("http://localhost:8080/users/1/password", {
+        const response = await fetch(`http://localhost:8080/users/${userId}/password`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify({
                 password: password.value,
                 password_confirm: passwordConfirm.value
             }),
+            credentials: "include",
         });
 
         const result = await response.json();
-
         if (!response.ok) {
-            throw new Error(result.message);
+            showErrorToast(result);
         }
 
         showToast();
     } catch (error) {
-        alert("비밀번호 수정 중 오류가 발생했습니다.");
+        showErrorToast("비밀번호 수정 중 오류가 발생했습니다.");
     }
 });
+
+function handleApiError(result) {
+    if (result.status === 400) {
+        showToast(result.message);
+    }
+    else if (result.status === 401) {
+        showToast(result.message);
+    }
+    else if (result.status === 403) {
+        showToast(result.message);
+    }
+    else if (result.status === 404) {
+        showToast(result.message);
+    }
+    else if (result.status === 422) {
+        if (result.message) {
+            passwordConfirmHelper.textContent = result.message;
+        }
+        else if (result.errors) {
+            result.errors.forEach(err => {
+            if (err.field === "password") {
+                passwordHelper.textContent = err.message;
+            }
+            else if (err.field === "password_confirm") {
+                passwordConfirmHelper.textContent = err.message;
+            }
+        });
+        }
+    }
+    else if (result.status === 500) {
+        showToast(result.message);
+    }
+    else {
+        showToast("알 수 없는 오류가 발생했습니다.");
+    }
+}
 
 loadUserProfile();

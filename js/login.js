@@ -8,6 +8,19 @@ const loginBtn = document.getElementById("loginBtn");
 const modal = document.getElementById("loginModal");
 const confirmModal = document.getElementById("confirmModal");
 
+const errorToast = document.getElementById("errorToast");
+
+function showToast(message) {
+    errorToast.textContent = message;
+    errorToast.classList.remove("hidden");
+    errorToast.classList.add("show");
+
+    setTimeout(() => {
+        errorToast.classList.remove("show");
+        setTimeout(() => errorToast.classList.add("hidden"), 300);
+    }, 2500);
+}
+
 // 이메일 검증
 function validateEmail(input) {
 
@@ -73,13 +86,16 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
                 email: email.value,
                 password: password.value
             }),
+            credentials: "include",
         });
 
         const result = await response.json();
-
         if (!response.ok) {
-            throw new Error(result.message);
+            handleApiError(result);
         }
+
+        localStorage.setItem("accessToken", result.data.access_token)
+        localStorage.setItem("userId", result.data.user_id)
 
         modal.classList.remove("hidden");
 
@@ -88,6 +104,31 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
             window.location.href = "/posts";
         };
     } catch (error) {
-        alert("로그인 중 오류가 발생했습니다.");
+        showToast("로그인 중 오류가 발생했습니다.")
     }
 });
+
+function handleApiError(result) {
+    if (result.status === 400) {
+        showToast(result.message);
+    }
+    else if (result.status === 401) {
+        showToast(result.message);
+    }
+    else if (result.status === 422) {
+        result.errors.forEach(err => {
+            if (err.field === "email") {
+                emailHelper.textContent = err.message;
+            } 
+            else if (err.field === "password") {
+                passwordHelper.textContent = err.message;
+            }
+        });
+    } 
+    else if (result.status === 500) {
+        showToast(result.message);
+    }
+    else {
+        showToast("알 수 없는 오류가 발생했습니다.");
+    }
+}

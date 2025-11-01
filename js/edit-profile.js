@@ -22,35 +22,55 @@ const cancelSignout = document.getElementById("cancelSignout");
 const confirmSignout = document.getElementById("confirmSignout");
 const confirmSignoutComplete = document.getElementById("confirmSignoutComplete");
 
+const accessToken = localStorage.getItem("accessToken");
+const userId = localStorage.getItem("userId");
+
+const errorToast = document.getElementById("errorToast");
+
 let selectedFile = null;
 
 let initialProfileImage = "";
 let initialNickname = "";
 
+function showErrorToast(message) {
+    errorToast.textContent = message;
+    errorToast.classList.remove("hidden");
+    errorToast.classList.add("show");
+
+    setTimeout(() => {
+        errorToast.classList.remove("show");
+        setTimeout(() => errorToast.classList.add("hidden"), 300);
+    }, 2500);
+}
+
 backBtn.addEventListener("click", () => {
     window.location.href = "/posts";
 });
 
-// Todo
 async function loadUserProfile() {
     try {
-        const response = await fetch("http://localhost:8080/users/me");
+        const response = await fetch("http://localhost:8080/users/me", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
+        });
 
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("유저 정보를 불러오지 못했습니다.");
+            handleApiError(result);
         }
 
-        const data = await response.json();
-
-        if (data.data.profile_image) {
-            userProfileImg.src = data.data.profile_image;
+        if (result.data.profile_image) {
+            userProfileImg.src = result.data.profile_image;
         }
         else {
             userProfileImg.src = "../assets/default-profile.png";
         }
 
     } catch (err) {
-        console.error(err);
+        showErrorToast("프로필 사진 업로드 중 오류가 발생했습니다.");
     }
 }
 
@@ -83,11 +103,16 @@ profileDropdownButtons.forEach((btn, index) => {
                 confirmLogout.onclick = async() => {
                     try {
                         const response = await fetch("http://localhost:8080/auth", {
-                            method: "DELETE"
+                            method: "DELETE",
+                            headers: {
+                                "Authorization": `Bearer ${accessToken}`
+                            },
+                            credentials: "include",
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
-                            throw new Error("로그아웃 요청 실패");
+                            handleApiError(result);
                         }
 
                         logoutModal.classList.add("hidden");
@@ -98,7 +123,7 @@ profileDropdownButtons.forEach((btn, index) => {
                             window.location.href = "/login";
                         };
                     } catch (err) {
-                        alert("로그아웃 중 오류가 발생했습니다.");
+                        showErrorToast("로그아웃 중 오류가 발생했습니다.");
                     }
                 };
                 break;
@@ -186,28 +211,33 @@ async function uploadImageToS3(file) {
 
         const result = await response.json();
         if (!response.ok) {
-            throw new Error(result.message);
+            handleApiError(result);
         }
 
         return result.data.images[0];
     } catch (error) {
-        alert("이미지 업로드 중 오류가 발생했습니다.");
+        showErrorToast("이미지 업로드 중 오류가 발생했습니다.");
         return null;
     }
 }
 
 // 사용자 정보 불러오기
-// Todo
 async function loadUserData() {
     try {
-        const response = await fetch("http://localhost:8080/users/1");
+        const response = await fetch(`http://localhost:8080/users/${userId}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
+        });
 
+        const result = await response.json();
         if (!response) {
-            throw new Error("회원 정보를 불러오지 못했습니다.");
+            handleApiError(result);
+            window.location.href = "/posts";
         }
-
-        const data = await response.json();
-        const user = data.data;
+        const user = result.data;
 
         email.textContent = user.email;
         nickname.value = user.nickname;
@@ -216,12 +246,12 @@ async function loadUserData() {
         initialProfileImage = user.profile_image;
         initialNickname = user.nickname;
     } catch (error) {
-        console.error(error);
+        showErrorToast("회원 정보 업로드 중 오류가 발생했습니다.");
+        window.location.href = "/posts";
     }
 }
 
 // 회원정보 수정
-// Todo
 document.getElementById("editProfileForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -252,26 +282,28 @@ document.getElementById("editProfileForm").addEventListener("submit", async (e) 
             requestBody.profile_image = imageUrl;
         }
 
-        const response = await fetch("http://localhost:8080/users/1", {
+        const response = await fetch(`http://localhost:8080/users/${userId}`, {
             method: "PATCH",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify(requestBody),
+            credentials: "include",
         });
 
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("회원정보 수정 실패");
+            handleApiError(result);
         }
 
         showToast();
     } catch (error) {
-        alert("회원정보 수정 중 오류가 발생했습니다.");
+        showErrorToast("회원정보 수정 중 오류가 발생했습니다.");
     }
 });
 
 // 회원탈퇴
-// Todo
 signoutBtn.addEventListener("click", () => {
     signoutModal.classList.remove("hidden");
 });
@@ -282,25 +314,79 @@ cancelSignout.addEventListener("click", () => {
 
 confirmSignout.addEventListener("click", async () => {
     try {
-        const response = await fetch("http://localhost:8080/users/1", {
+        const response = await fetch(`http://localhost:8080/users/${userId}`, {
             method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
         });
-
+        
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("회원탈퇴 실패");
+            handleApiError(result);
         }
 
         signoutModal.classList.add("hidden");
         signoutCompleteModal.classList.remove("hidden");
     } catch (error) {
-        alert("회원탈퇴 중 오류가 발생했습니다.");
+        showErrorToast("회원탈퇴 중 오류가 발생했습니다.");
     }
 });
 
 confirmSignoutComplete.addEventListener("click", () => {
     signoutCompleteModal.classList.add("hidden");
-    window.location.href = "login.html";
+    window.location.href = "/login";
 });
+
+function handleApiError(result) {
+    if (result.status === 400) {
+        showErrorToast(result.message);
+    }
+    else if (result.status === 401) {
+        showErrorToast(result.message);
+    }
+    else if (result.status === 404) {
+        showErrorToast(result.message);
+    }
+    else if (result.status === 500) {
+        showErrorToast(result.message);
+    }
+    else {
+        showErrorToast("알 수 없는 오류가 발생했습니다.");
+    }
+}
+
+function handleApiError(result) {
+    if (result.status === 400) {
+        showErrorToast(result.message);
+    }
+    else if (result.status === 401) {
+        showErrorToast(result.message);
+    }
+    else if (result.status === 403) {
+        showErrorToast(result.message);
+    }
+    else if (result.status === 404) {
+        showErrorToast(result.message);
+    }
+    else if (result.status === 409) {
+        showErrorToast(result.message);
+    }
+    else if (result.status === 422) {
+        result.errors.forEach(err => {
+            if (err.field === "nickname") {
+                nicknameHelper.textContent = err.message;
+            }
+        });
+    } 
+    else if (result.status === 500) {
+        showErrorToast(result.message);
+    }
+    else {
+        showErrorToast("알 수 없는 오류가 발생했습니다.");
+    }
+}
 
 loadUserProfile();
 loadUserData();

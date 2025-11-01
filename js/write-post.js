@@ -19,32 +19,52 @@ const modal = document.getElementById("writePostModal");
 const confirmModal = document.getElementById("confirmModal");
 const backBtn = document.querySelector(".back-btn");
 
+const accessToken = localStorage.getItem("accessToken");
+
+const errorToast = document.getElementById("errorToast");
+
 // 이미지 파일 선택 및 표시
 let selectedFiles = [];
 
-backBtn.addEventListener("click", () => {
+function showToast(message) {
+    errorToast.textContent = message;
+    errorToast.classList.remove("hidden");
+    errorToast.classList.add("show");
+
+    setTimeout(() => {
+        errorToast.classList.remove("show");
+        setTimeout(() => errorToast.classList.add("hidden"), 300);
+    }, 2500);
+}
+
+backBtn.addEventListener("click", () => {s
     window.location.href = "/posts";
 });
 
 async function loadUserProfile() {
     try {
-        const response = await fetch("http://localhost:8080/users/me");
+        const response = await fetch("http://localhost:8080/users/me", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+            },
+            credentials: "include",
+        });
 
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("유저 정보를 불러오지 못했습니다.");
+            handleApiError(result);
         }
 
-        const data = await response.json();
-
-        if (data.data.profile_image) {
-            userProfileImg.src = data.data.profile_image;
+        if (result.data.profile_image) {
+            userProfileImg.src = result.data.profile_image;
         }
         else {
             userProfileImg.src = "../assets/default-profile.png";
         }
 
     } catch (err) {
-        console.error(err);
+        showToast("프로필 사진 업로드 중 오류가 발생했습니다.");
     }
 }
 
@@ -77,11 +97,16 @@ profileDropdownButtons.forEach((btn, index) => {
                 confirmLogout.onclick = async() => {
                     try {
                         const response = await fetch("http://localhost:8080/auth", {
-                            method: "DELETE"
+                            method: "DELETE",
+                            headers: {
+                                "Authorization": `Bearer ${accessToken}`
+                            },
+                            credentials: "include",
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
-                            throw new Error("로그아웃 요청 실패");
+                            handleApiError(result);
                         }
 
                         logoutModal.classList.add("hidden");
@@ -92,7 +117,7 @@ profileDropdownButtons.forEach((btn, index) => {
                             window.location.href = "/login";
                         };
                     } catch (err) {
-                        alert("로그아웃 중 오류가 발생했습니다.");
+                        showToast("로그아웃 중 오류가 발생했습니다.");
                     }
                 };
                 break;
@@ -186,9 +211,8 @@ async function uploadImagesToS3(files) {
         });
 
     const result = await response.json();
-
     if (!response.ok) {
-        throw new Error(result.message);
+        handleApiError(result);
     }
 
     return result.data.images.map((url, idx) => {
@@ -206,7 +230,7 @@ async function uploadImagesToS3(files) {
         });
 
     } catch (error) {
-        alert("이미지 업로드 중 오류가 발생했습니다.");
+        showToast("이미지 업로드 중 오류가 발생했습니다.");
         return;
     }
 }
@@ -217,7 +241,7 @@ async function addPost() {
     const postContent = content.value;
 
     if (!postTitle || !postContent) {
-        alert("제목, 내용을 모두 작성해주세요.");
+        showToast("제목, 내용을 모두 작성해주세요.");
         return;
     }
 
@@ -232,12 +256,14 @@ async function addPost() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify({
                 title: postTitle,
                 content: postContent,
                 post_images: imageInfos,
             }),
+            credentials: "include",
         });
 
         const result = await response.json();
@@ -252,13 +278,38 @@ async function addPost() {
         }
         else 
         {
-            throw new Error(result.message);
+            handleApiError(result);
         }
     } catch (err) {
-        alert("게시글 등록 중 오류가 발생했습니다.");
+        showToast("게시글 등록 중 오류가 발생했습니다.");
+    }
+}
+
+submitBtn.addEventListener("click", addPost);
+
+function handleApiError(result) {
+    if (result.status === 400) {
+        showToast(result.message);
+    }
+    else if (result.status === 401) {
+        showToast(result.message);
+    }
+    else if (result.status === 422) {
+        result.errors.forEach(err => {
+            if (err.field === "title") {
+                postHelper.textContent = err.message;
+            } 
+            else if (err.field === "content") {
+                postHelper.textContent = err.message;
+            }
+        });
+    }
+    else if (result.status === 500) {
+        showToast(result.message);
+    }
+    else {
+        showToast("알 수 없는 오류가 발생했습니다.");
     }
 }
 
 loadUserProfile();
-
-submitBtn.addEventListener("click", addPost);

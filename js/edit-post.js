@@ -18,6 +18,10 @@ const backBtn = document.querySelector(".back-btn");
 const modal = document.getElementById("writePostModal");
 const confirmModal = document.getElementById("confirmModal");
 
+const accessToken = localStorage.getItem("accessToken");
+
+const errorToast = document.getElementById("errorToast");
+
 let selectedFiles = [];
 let originalImages = [];
 let postId = null;
@@ -29,29 +33,45 @@ let initialImages = [];
 // URL에서 postId 가져오기
 postId = window.location.pathname.split("/").pop();
 
+function showToast(message) {
+    errorToast.textContent = message;
+    errorToast.classList.remove("hidden");
+    errorToast.classList.add("show");
+
+    setTimeout(() => {
+        errorToast.classList.remove("show");
+        setTimeout(() => errorToast.classList.add("hidden"), 300);
+    }, 2500);
+}
+
 backBtn.addEventListener("click", () => {
     window.location.href = `/post/${postId}`;
 });
 
 async function loadUserProfile() {
     try {
-        const response = await fetch("http://localhost:8080/users/me");
+        const response = await fetch("http://localhost:8080/users/me", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+            },
+            credentials: "include",
+        });
 
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("유저 정보를 불러오지 못했습니다.");
+            handleApiError(result);
         }
 
-        const data = await response.json();
-
-        if (data.data.profile_image) {
-            userProfileImg.src = data.data.profile_image;
+        if (result.data.profile_image) {
+            userProfileImg.src = result.data.profile_image;
         }
         else {
             userProfileImg.src = "../assets/default-profile.png";
         }
 
     } catch (err) {
-        console.error(err);
+        showToast("프로필 사진 업로드 중 오류가 발생했습니다.");
     }
 }
 
@@ -84,11 +104,16 @@ profileDropdownButtons.forEach((btn, index) => {
                 confirmLogout.onclick = async() => {
                     try {
                         const response = await fetch("http://localhost:8080/auth", {
-                            method: "DELETE"
+                            method: "DELETE",
+                            headers: {
+                                "Authorization": `Bearer ${accessToken}`
+                            },
+                            credentials: "include",
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
-                            throw new Error("로그아웃 요청 실패");
+                            handleApiError(result);
                         }
 
                         logoutModal.classList.add("hidden");
@@ -99,7 +124,7 @@ profileDropdownButtons.forEach((btn, index) => {
                             window.location.href = "/login";
                         };
                     } catch (err) {
-                        alert("로그아웃 중 오류가 발생했습니다.");
+                        showToast("로그아웃 중 오류가 발생했습니다.");
                     }
                 };
                 break;
@@ -128,7 +153,13 @@ content.addEventListener("input", checkFormValidity);
 // 기존 게시글 불러오기
 async function loadPostData() {
     try {
-        const response = await fetch(`http://localhost:8080/posts/${postId}/edit`);
+        const response = await fetch(`http://localhost:8080/posts/${postId}/edit`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
+        });
         if (!response.ok) {
             throw new Error("게시글 정보를 불러오지 못했습니다.");
         }
@@ -304,8 +335,12 @@ async function updatePost() {
         
         const response = await fetch(`http://localhost:8080/posts/${postId}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            },
             body: JSON.stringify(requestBody),
+            credentials: "include",
         });
 
         const result = await response.json();
@@ -320,6 +355,39 @@ async function updatePost() {
         }
     } catch (err) {
         alert("게시글 수정 중 오류가 발생했습니다.");
+    }
+}
+
+function handleApiError(result) {
+    if (result.status === 400) {
+        showToast(result.message);
+    }
+    else if (result.status === 401) {
+        showToast(result.message);
+    }
+    else if (result.status === 403) {
+        showToast(result.message);
+    }
+    else if (result.status === 404) {
+        showToast(result.message);
+    }
+    else if (result.status === 422) {
+        if (result.message) {
+            postHelper.textContent = "제목, 내용을 모두 작성해주세요."
+        }
+        if (result.errors) {
+            result.errors.forEach(err => {
+            if (err.field === "title") {
+                postHelper.textContent = err.message;
+            }
+        });
+        }
+    }
+    else if (result.status === 500) {
+        showToast(result.message);
+    }
+    else {
+        showToast("알 수 없는 오류가 발생했습니다.");
     }
 }
 

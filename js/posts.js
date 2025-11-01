@@ -9,29 +9,49 @@ const profileDropdownButtons = profileDropdown.querySelectorAll("button");
 const postList = document.getElementById("postList");
 const writeBtn = document.getElementById("writeBtn");
 
+const accessToken = localStorage.getItem("accessToken");
+
+const errorToast = document.getElementById("errorToast");
+
 let lastPostCreatedAt = null;
 let lastPostId = null;
 let isLoading = false;
 
+function showToast(message) {
+    errorToast.textContent = message;
+    errorToast.classList.remove("hidden");
+    errorToast.classList.add("show");
+
+    setTimeout(() => {
+        errorToast.classList.remove("show");
+        setTimeout(() => errorToast.classList.add("hidden"), 300);
+    }, 2500);
+}
+
 async function loadUserProfile() {
     try {
-        const response = await fetch("http://localhost:8080/users/me");
+        const response = await fetch("http://localhost:8080/users/me", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
+        });
 
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("유저 정보를 불러오지 못했습니다.");
+            handleApiError(result);
         }
 
-        const data = await response.json();
-
-        if (data.data.profile_image) {
-            userProfileImg.src = data.data.profile_image;
+        if (result.data.profile_image) {
+            userProfileImg.src = result.data.profile_image;
         }
         else {
             userProfileImg.src = "../assets/default-profile.png";
         }
 
     } catch (err) {
-        console.error(err);
+        showToast("프로필 사진 업로드 중 오류가 발생했습니다.");
     }
 }
 
@@ -64,11 +84,16 @@ profileDropdownButtons.forEach((btn, index) => {
                 confirmLogout.onclick = async() => {
                     try {
                         const response = await fetch("http://localhost:8080/auth", {
-                            method: "DELETE"
+                            method: "DELETE",
+                            headers: {
+                                "Authorization": `Bearer ${accessToken}`
+                            },
+                            credentials: "include",
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
-                            throw new Error("로그아웃 요청 실패");
+                            handleApiError(result);
                         }
 
                         logoutModal.classList.add("hidden");
@@ -79,7 +104,7 @@ profileDropdownButtons.forEach((btn, index) => {
                             window.location.href = "/login";
                         };
                     } catch (err) {
-                        alert("로그아웃 중 오류가 발생했습니다.");
+                        showToast("로그아웃 중 오류가 발생했습니다.")
                     }
                 };
                 break;
@@ -104,7 +129,6 @@ const observer = new IntersectionObserver(
 
 // 게시글 불러오기 함수
 async function fetchPosts() {
-
     if (isLoading) {
         return;
     }
@@ -118,13 +142,20 @@ async function fetchPosts() {
             url += `?lastPostCreatedAt=${formattedDate}&lastPostId=${lastPostId}`;
         }
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            credentials: "include",
+        });
+
+        const result = await response.json();
         if (!response.ok) {
-            throw new Error("게시글을 불러오지 못했습니다.");
+            handleApiError(result);
         }
         
-        const data = await response.json();
-        const posts = data.data.posts;
+        const posts = result.data.posts;
 
         if (!posts || posts.length === 0) {
             return;
@@ -132,14 +163,14 @@ async function fetchPosts() {
 
         renderPosts(posts);
 
-        lastPostCreatedAt = data.data.last_post_created_at;
-        lastPostId = data.data.last_post_id;
+        lastPostCreatedAt = result.data.last_post_created_at;
+        lastPostId = result.data.last_post_id;
 
         if (postList.lastElementChild) {
             observer.observe(postList.lastElementChild);
         } 
     } catch (err) {
-        alert("게시글 목록 조회 중 오류가 발생했습니다.")
+        showToast("게시글 목록 조회 중 오류가 발생했습니다.");
     } finally {
         isLoading = false;
     }
@@ -193,6 +224,24 @@ function formatNumber(num) {
     }
   
     return num;
+}
+
+function handleApiError(result) {
+    if (result.status === 400) {
+        showToast(result.message);
+    }
+    else if (result.status === 401) {
+        showToast(result.message);
+    }
+    else if (result.status === 404) {
+        showToast(result.message);
+    }
+    else if (result.status === 500) {
+        showToast(result.message);
+    }
+    else {
+        showToast("알 수 없는 오류가 발생했습니다.");
+    }
 }
 
 // 게시글 로드
